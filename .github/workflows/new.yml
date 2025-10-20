@@ -1,0 +1,100 @@
+// NOTE: This file contains the core logic extracted from index.html for unit testing.
+// In a live application, the DOM references (chatMessages, userInput) would be dynamically
+// assigned when the script runs in the browser. For testing, we export them.
+
+// Global DOM references (will be assigned when the script runs in index.html)
+let chatMessages;
+let userInput;
+
+/**
+ * Attaches DOM elements after the document is fully loaded.
+ */
+function initializeDOM() {
+    chatMessages = document.getElementById('chatMessages');
+    userInput = document.getElementById('userInput');
+}
+
+/**
+ * Creates and appends a new message bubble to the chat container.
+ * @param {string} text - The message content.
+ * @param {('bot'|'user')} sender - The sender of the message.
+ */
+function appendMessage(text, sender) {
+    // Check if DOM elements are available (important for running in the browser)
+    if (!chatMessages) {
+        // For testing purposes, we allow this function to run without the DOM
+        // but in the browser, initializeDOM must have been called.
+        return;
+    }
+
+    const messageDiv = document.createElement('div');
+    messageDiv.classList.add('message', 'shadow-sm');
+    messageDiv.textContent = text;
+
+    if (sender === 'bot') {
+        messageDiv.classList.add('bot-message');
+    } else {
+        messageDiv.classList.add('user-message');
+    }
+
+    chatMessages.appendChild(messageDiv);
+
+    // Scroll to the bottom of the chat window
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+/**
+ * Contains the bot's simple reply logic.
+ * @param {string} userMessage - The message sent by the user (unused in this simple version).
+ */
+function botReply(userMessage) {
+    // As requested, the bot only provides a simple, canned reply
+    const simpleReply = "Thanks for your message! I'm here to listen.";
+
+    // Simulate a typing delay for a better user experience
+    setTimeout(() => {
+        appendMessage(simpleReply, 'bot');
+    }, 500);
+}
+
+/**
+ * Handles the process of sending a user message.
+ */
+function sendMessage() {
+    // Ensure we have the input element before trying to access its value
+    if (!userInput) {
+        return;
+    }
+
+    const messageText = userInput.value.trim();
+
+    if (messageText === '') {
+        return; // Don't send empty messages
+    }
+
+    // 1. Display user message
+    appendMessage(messageText, 'user');
+
+    // 2. Clear input field
+    userInput.value = '';
+
+    // 3. Get bot's response
+    botReply(messageText);
+}
+
+// Initial Greeting setup (must be run only in the browser)
+window.onload = function() {
+    initializeDOM(); // Ensure DOM elements are linked
+    const initialGreeting = "Hello! I'm your simple helper bot. How can I assist you today?";
+    // The bot provides the greeting first
+    appendMessage(initialGreeting, 'bot');
+};
+
+// Export functions for unit testing (Jest environment)
+module.exports = { 
+    appendMessage, 
+    botReply, 
+    sendMessage,
+    // Note: We do NOT export initializeDOM or the DOM elements themselves
+    // as they will be mocked in the test file.
+};
